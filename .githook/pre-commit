@@ -3,6 +3,51 @@
 # Unified pre-commit hook that delegates checks to sub-projects
 # Only checks sub-projects with changed files
 
+# Fork repository constraint: Prevent modifications to backend, hack, storage, and website directories
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only 2>/dev/null)
+
+# Check for forbidden directory modifications
+FORBIDDEN_CHANGES=""
+if echo "$STAGED_FILES" | grep -q "^backend/"; then
+    FORBIDDEN_CHANGES="${FORBIDDEN_CHANGES}backend "
+fi
+
+if echo "$STAGED_FILES" | grep -q "^hack/"; then
+    FORBIDDEN_CHANGES="${FORBIDDEN_CHANGES}hack "
+fi
+
+if echo "$STAGED_FILES" | grep -q "^storage/"; then
+    FORBIDDEN_CHANGES="${FORBIDDEN_CHANGES}storage "
+fi
+
+if echo "$STAGED_FILES" | grep -q "^website/"; then
+    FORBIDDEN_CHANGES="${FORBIDDEN_CHANGES}website "
+fi
+
+if [ -n "$FORBIDDEN_CHANGES" ]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "❌ Commit Rejected"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "You are working in a fork repository where modifications to the following"
+    echo "directories are restricted:"
+    echo ""
+    for dir in $FORBIDDEN_CHANGES; do
+        echo "  - $dir"
+    done
+    echo ""
+    echo "This restriction is in place because the corresponding GitHub Actions workflows"
+    echo "have been disabled in this fork."
+    echo ""
+    echo "Please only make changes to the frontend directory in this fork repository."
+    echo ""
+    echo "If you need to modify these components, please do so in the original repository."
+    echo ""
+    exit 1
+fi
+
 # Ensure we're in the repository root directory
 # Git hooks are executed from the repository root, but we verify this
 if [ ! -d ".git" ] && [ ! -f ".git" ]; then
@@ -12,9 +57,6 @@ if [ ! -d ".git" ] && [ ! -f ".git" ]; then
         cd "$GIT_ROOT" || exit 1
     fi
 fi
-
-# Get list of staged files
-STAGED_FILES=$(git diff --cached --name-only 2>/dev/null)
 
 # If no staged files, check if there are modified files
 if [ -z "$STAGED_FILES" ]; then

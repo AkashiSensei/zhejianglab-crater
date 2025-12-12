@@ -36,7 +36,7 @@ images:
     tag: "latest"
   frontend:
     # -- Frontend service image repository
-    repository: "ghcr.io/raids-lab/crater-frontend"
+    repository: "ghcr.io/raids-lab/zhejianglab-crater-frontend"
     # -- Frontend service image tag
     tag: "latest"
   storage:
