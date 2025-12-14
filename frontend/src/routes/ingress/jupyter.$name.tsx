@@ -102,7 +102,7 @@ function Jupyter() {
     link.type = 'image/svg+xml'
 
     // Set page title
-    document.title = `${name} - Crater Jupyter`
+    document.title = `${name} - Jupyter`
 
     // Cleanup function to revoke object URL
     return () => {

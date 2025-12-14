@@ -30,15 +30,16 @@ import {
 } from '@/components/ui/alert-dialog'
 
 import DocsButton from '@/components/button/docs-button'
-import CraterIcon from '@/components/icon/crater-icon'
-import CraterText from '@/components/icon/crater-text'
+// import CraterIcon from '@/components/icon/crater-icon'
+// import CraterText from '@/components/icon/crater-text'
 import NotFound from '@/components/placeholder/not-found'
 
 import { AuthMode } from '@/services/api/auth'
 import { queryAuthMode } from '@/services/query/auth'
 
 import { configUrlWebsiteBaseAtom } from '@/utils/store/config'
-import { useTheme } from '@/utils/theme'
+
+// import { useTheme } from '@/utils/theme'
 
 import { ForgotPasswordForm } from './-components/forgot-password-form'
 import { LoginForm } from './-components/login-form'
@@ -75,11 +76,12 @@ export const Route = createFileRoute('/auth/')({
 
 function LoginPage() {
   const searchParams = Route.useSearch()
-  const { auth } = Route.useRouteContext()
+  const auth = Route.useRouteContext().auth
   const [showSignup, setShowSignup] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [showRegisterDialog, setShowRegisterDialog] = useState(false)
-  const { theme, setTheme } = useTheme()
+  //   const theme = useTheme().theme
+  //   const setTheme = useTheme().setTheme
   const currentMode = Route.useLoaderData().authMode
   const website = useAtomValue(configUrlWebsiteBaseAtom)
 
@@ -114,8 +116,8 @@ function LoginPage() {
       {/* 左侧部分 */}
       <div className="bg-primary hidden lg:block dark:bg-slate-800/70">
         <div className="relative h-full w-full">
-          {/* 顶部Logo */}
-          <div
+          {/* 顶部Logo - 已隐藏 */}
+          {/* <div
             className="absolute top-10 left-10 z-20 flex items-center text-lg font-medium"
             title="Switch signup and login"
           >
@@ -126,13 +128,13 @@ function LoginPage() {
               <CraterIcon className="mr-1.5 h-8 w-8" />
               <CraterText className="h-4" />
             </button>
-          </div>
-          {/* 底部版权信息 */}
-          <div className="absolute bottom-10 left-10 z-20">
+          </div> */}
+          {/* 底部版权信息 - 已隐藏 */}
+          {/* <div className="absolute bottom-10 left-10 z-20">
             <blockquote className="space-y-2">
               <footer className="text-sm text-white/80">Copyright @ ACT RAIDS Lab</footer>
             </blockquote>
-          </div>
+          </div> */}
           {/* 中间文字内容 */}
           <div className="relative flex h-full items-center justify-center">
             <div className="z-10 px-6 py-8 text-left text-white lg:px-16 lg:py-12">
