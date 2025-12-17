@@ -193,8 +193,8 @@ jobs:
 
       - uses: quartx-analytics/ghcr-cleaner@v1
         with:
-          owner-type: org # or user
-          token: ${{ secrets.PAT_TOKEN  }}
+          owner-type: user
+          token: ${{ secrets.GITHUB_TOKEN }}
           repository-owner: ${{ github.repository_owner }}
           package-name: ${{ env.IMAGE_NAME }}
           delete-untagged: true
