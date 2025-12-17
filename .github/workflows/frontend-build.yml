@@ -27,7 +27,7 @@ env:
   # Modified to use GHCR configuration
   REGISTRY: ghcr.io
   # Set your Docker Hub username and repository name
-  REPOSITORY: raids-lab
+  REPOSITORY: AkashiSensei
   IMAGE_NAME: zhejianglab-crater-frontend
 
 jobs:
