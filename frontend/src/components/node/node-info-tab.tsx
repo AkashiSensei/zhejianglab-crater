@@ -22,9 +22,7 @@ import {
   ServerIcon,
   Zap,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Cell, Label, Pie, PieChart, ResponsiveContainer } from 'recharts'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -45,18 +43,28 @@ type NodeInfoTabProps = {
   gpuDetail?: IClusterNodeGPU
 }
 
+// 获取CPU品牌图标路径，如果没有匹配则返回 null
+const getCpuBrandIcon = (brand?: string): string | null => {
+  if (!brand) {
+    return null
+  }
+  const brandLower = brand.toLowerCase()
+  // 尝试匹配品牌名称到图标文件
+  if (brandLower.includes('hygon')) {
+    return '/nodes/hygon-logo.png'
+  }
+  if (brandLower.includes('sunway') || brandLower.includes('sw')) {
+    return '/nodes/sw-logo.png'
+  }
+  if (brandLower.includes('yitian')) {
+    return '/nodes/yitian.png'
+  }
+  // 没有匹配到，返回 null
+  return null
+}
+
 export const NodeInfoTab = ({ nodeDetail, gpuDetail }: NodeInfoTabProps) => {
   const { t } = useTranslation()
-  const [isDataLoaded, setIsDataLoaded] = useState(false)
-
-  useEffect(() => {
-    if (nodeDetail?.used?.cpu !== undefined && nodeDetail?.capacity?.cpu !== undefined) {
-      const timer = setTimeout(() => setIsDataLoaded(true), 50)
-      return () => clearTimeout(timer)
-    } else {
-      setIsDataLoaded(false)
-    }
-  }, [nodeDetail?.used?.cpu, nodeDetail?.capacity?.cpu])
 
   if (!nodeDetail) return null
 
@@ -66,21 +74,6 @@ export const NodeInfoTab = ({ nodeDetail, gpuDetail }: NodeInfoTabProps) => {
   const cpuCapacityValue = nodeDetail.capacity?.cpu
     ? convertKResourceToResource('cpu', nodeDetail.capacity.cpu)
     : undefined
-  const cpuCapacity = cpuCapacityValue !== undefined ? cpuCapacityValue.toFixed(2) : '-'
-  const cpuPercentage =
-    cpuUsedValue !== undefined && cpuCapacityValue !== undefined && cpuCapacityValue > 0
-      ? Math.round((cpuUsedValue / cpuCapacityValue) * 100)
-      : 0
-
-  const cpuChartData = isDataLoaded
-    ? [
-        { name: 'Used', value: cpuUsedValue || 0 },
-        { name: 'Free', value: Math.max(0, (cpuCapacityValue || 0) - (cpuUsedValue || 0)) },
-      ]
-    : [
-        { name: 'Used', value: 0 },
-        { name: 'Free', value: cpuCapacityValue || 0 },
-      ]
 
   const memoryUsedGi = nodeDetail.used?.memory
     ? convertKResourceToResource('memory', nodeDetail.used.memory)
@@ -100,11 +93,6 @@ export const NodeInfoTab = ({ nodeDetail, gpuDetail }: NodeInfoTabProps) => {
 
   // GPU ID 到作业名称列表的映射
   const relateJobsMap: Record<string, string[]> = gpuDetail?.relateJobs || {}
-
-  const CHART_COLORS = {
-    used: 'var(--primary)',
-    free: 'var(--muted)',
-  }
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -176,59 +164,34 @@ export const NodeInfoTab = ({ nodeDetail, gpuDetail }: NodeInfoTabProps) => {
             {t('nodeDetail.info.cpuInfo')}
           </h3>
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center gap-2">
-              <div className="relative h-[100px] w-[100px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={cpuChartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={30}
-                      outerRadius={45}
-                      startAngle={90}
-                      endAngle={-270}
-                      dataKey="value"
-                      stroke="none"
-                      isAnimationActive={isDataLoaded}
-                      animationBegin={0}
-                      animationDuration={800}
-                    >
-                      <Cell fill={CHART_COLORS.used} />
-                      <Cell fill={CHART_COLORS.free} />
-                      <Label
-                        content={({ viewBox }) => {
-                          if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                            return (
-                              <text
-                                x={viewBox.cx}
-                                y={viewBox.cy}
-                                textAnchor="middle"
-                                dominantBaseline="middle"
-                              >
-                                <tspan
-                                  x={viewBox.cx}
-                                  y={viewBox.cy}
-                                  className="fill-foreground text-lg font-bold"
-                                >
-                                  {cpuPercentage}%
-                                </tspan>
-                              </text>
-                            )
-                          }
-                        }}
-                      />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              {cpuUsedValue !== undefined && cpuCapacityValue !== undefined && (
-                <div className="text-muted-foreground font-mono text-[10px]">
-                  {cpuUsedValue.toFixed(2)} / {cpuCapacityValue.toFixed(2)} Cores
+            {getCpuBrandIcon(nodeDetail.cpuBrand) ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative flex h-[100px] w-[100px] items-center justify-center">
+                  <img
+                    src={getCpuBrandIcon(nodeDetail.cpuBrand)!}
+                    alt={nodeDetail.cpuBrand || 'CPU Brand'}
+                    className="h-20 w-20 object-contain"
+                  />
                 </div>
-              )}
-            </div>
+              </div>
+            ) : null}
             <div className="flex flex-1 flex-col justify-center gap-4 pl-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-muted-foreground mb-1 text-[10px] tracking-wider uppercase">
+                    {t('nodeDetail.info.cpuBrand')}
+                  </div>
+                  <div className="text-lg font-bold">{nodeDetail.cpuBrand || '-'}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground mb-1 text-[10px] tracking-wider uppercase">
+                    {t('nodeDetail.info.cpuModel')}
+                  </div>
+                  <div className="text-lg font-bold">
+                    {nodeDetail.cpuModel ? nodeDetail.cpuModel.replace(/-/g, ' ') : '-'}
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-muted-foreground mb-1 text-[10px] tracking-wider uppercase">
@@ -241,19 +204,16 @@ export const NodeInfoTab = ({ nodeDetail, gpuDetail }: NodeInfoTabProps) => {
                     {t('nodeDetail.info.cpuCount')}
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-lg font-bold">{cpuCapacity}</span>
+                    <span className="text-lg font-bold">
+                      {cpuUsedValue !== undefined && cpuCapacityValue !== undefined
+                        ? `${cpuUsedValue.toFixed(2)} / ${cpuCapacityValue.toFixed(2)}`
+                        : cpuCapacityValue !== undefined
+                          ? `- / ${cpuCapacityValue.toFixed(2)}`
+                          : '-'}
+                    </span>
                     <span className="text-muted-foreground text-xs">Cores</span>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center border-t pt-4">
-                <div className="text-muted-foreground flex w-32 shrink-0 items-center gap-2 text-sm">
-                  <CpuIcon className="size-4" />
-                  <span>{t('nodeDetail.info.cpuModel')}</span>
-                </div>
-                <Badge variant="secondary" className="ml-1 font-mono text-[10px]">
-                  {'-'}
-                </Badge>
               </div>
             </div>
           </div>

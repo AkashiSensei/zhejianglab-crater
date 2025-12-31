@@ -515,6 +515,10 @@ definitions:
         $ref: '#/definitions/v1.ResourceList'
       containerRuntimeVersion:
         type: string
+      cpuBrand:
+        type: string
+      cpuModel:
+        type: string
       gpuArch:
         type: string
       gpuCount:

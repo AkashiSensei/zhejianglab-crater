@@ -67,6 +67,8 @@ type NodeBriefInfo struct {
 	Arch          string                   `json:"arch"`
 	Status        corev1.NodeConditionType `json:"status"`
 	Vendor        string                   `json:"vendor"`
+	CPUBrand      string                   `json:"cpuBrand"`
+	CPUModel      string                   `json:"cpuModel"`
 	Taints        []corev1.Taint           `json:"taints"`
 	Capacity      corev1.ResourceList      `json:"capacity"`
 	Allocatable   corev1.ResourceList      `json:"allocatable"`
@@ -108,6 +110,8 @@ type ClusterNodeDetail struct {
 	Os                      string                   `json:"os"`
 	OsVersion               string                   `json:"osVersion"`
 	Arch                    string                   `json:"arch"`
+	CPUBrand                string                   `json:"cpuBrand"`
+	CPUModel                string                   `json:"cpuModel"`
 	KubeletVersion          string                   `json:"kubeletVersion"`
 	ContainerRuntimeVersion string                   `json:"containerRuntimeVersion"`
 	KernelVersion           string                   `json:"kernelVersion"`
@@ -294,6 +298,18 @@ func (nc *NodeClient) ListNodes(ctx context.Context) ([]NodeBriefInfo, error) {
 			vendor = vendorLabel
 		}
 
+		// 获取 CPU 品牌信息
+		cpuBrand := ""
+		if brand, exists := node.Labels["crater.raids-lab.io/cpu-brand"]; exists {
+			cpuBrand = brand
+		}
+
+		// 获取 CPU 型号信息
+		cpuModel := ""
+		if modelLabel, exists := node.Labels["crater.raids-lab.io/cpu-model"]; exists {
+			cpuModel = modelLabel
+		}
+
 		// 获取 GPU 驱动版本
 		gpuDriver := ""
 		if driver, exists := node.Labels["nvidia.com/cuda.driver-version.full"]; exists {
@@ -309,6 +325,8 @@ func (nc *NodeClient) ListNodes(ctx context.Context) ([]NodeBriefInfo, error) {
 			Arch:          node.Status.NodeInfo.Architecture,
 			Status:        getNodeStatus(node),
 			Vendor:        vendor,
+			CPUBrand:      cpuBrand,
+			CPUModel:      cpuModel,
 			Taints:        node.Spec.Taints,
 			Capacity:      node.Status.Capacity,
 			Allocatable:   node.Status.Allocatable,
@@ -346,6 +364,18 @@ func (nc *NodeClient) GetNode(ctx context.Context, name string) (ClusterNodeDeta
 		}
 	}
 
+	// 获取 CPU 品牌信息
+	cpuBrand := ""
+	if brand, exists := node.Labels["crater.raids-lab.io/cpu-brand"]; exists {
+		cpuBrand = brand
+	}
+
+	// 获取 CPU 型号信息
+	cpuModel := ""
+	if modelLabel, exists := node.Labels["crater.raids-lab.io/cpu-model"]; exists {
+		cpuModel = modelLabel
+	}
+
 	// 获取 GPU 驱动版本
 	gpuDriver := ""
 	if driver, exists := node.Labels["nvidia.com/cuda.driver-version.full"]; exists {
@@ -365,6 +395,8 @@ func (nc *NodeClient) GetNode(ctx context.Context, name string) (ClusterNodeDeta
 		Os:                      node.Status.NodeInfo.OperatingSystem,
 		OsVersion:               node.Status.NodeInfo.OSImage,
 		Arch:                    node.Status.NodeInfo.Architecture,
+		CPUBrand:                cpuBrand,
+		CPUModel:                cpuModel,
 		KubeletVersion:          node.Status.NodeInfo.KubeletVersion,
 		ContainerRuntimeVersion: node.Status.NodeInfo.ContainerRuntimeVersion,
 		KernelVersion:           node.Status.NodeInfo.KernelVersion,

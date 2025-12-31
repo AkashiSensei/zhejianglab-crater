@@ -524,6 +524,7 @@
   "nodeDetail.info.acceleratorInfo": "가속 카드 정보",
   "nodeDetail.info.basicInfo": "기본 정보",
   "nodeDetail.info.cpuInfo": "CPU 정보",
+  "nodeDetail.info.cpuBrand": "CPU 제조사",
   "nodeDetail.info.cpuCount": "CPU 코어 수",
   "nodeDetail.info.cpuUsed": "사용중 CPU",
   "nodeDetail.info.cpuModel": "CPU 모델",

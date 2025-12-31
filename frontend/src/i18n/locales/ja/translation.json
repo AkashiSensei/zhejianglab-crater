@@ -525,6 +525,7 @@
   "nodeDetail.info.acceleratorInfo": "アクセラレーター情報",
   "nodeDetail.info.basicInfo": "基本情報",
   "nodeDetail.info.cpuInfo": "CPU情報",
+  "nodeDetail.info.cpuBrand": "CPUメーカー",
   "nodeDetail.info.cpuCount": "CPUコア数",
   "nodeDetail.info.cpuUsed": "使用中CPU",
   "nodeDetail.info.cpuModel": "CPUモデル",

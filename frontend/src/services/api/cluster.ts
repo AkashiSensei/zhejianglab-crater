@@ -39,6 +39,8 @@ export interface INodeBriefInfo {
   arch: string
   status: NodeStatus
   vendor: string
+  cpuBrand?: string
+  cpuModel?: string
   taints: IClusterNodeTaint[]
   capacity: V1ResourceList
   allocatable: V1ResourceList
@@ -81,6 +83,8 @@ export interface IClusterNodeDetail {
   os: string
   osVersion: string
   arch: string
+  cpuBrand?: string
+  cpuModel?: string
   kubeletVersion: string
   containerRuntimeVersion: string
   kernelVersion?: string

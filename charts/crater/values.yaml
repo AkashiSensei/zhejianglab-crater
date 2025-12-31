@@ -31,12 +31,12 @@ imagePullSecrets: []
 images:
   backend:
     # -- Backend service image repository
-    repository: "ghcr.io/raids-lab/crater-backend"
+    repository: "ghcr.io/AkashiSensei/zhejianglab-crater-backend"
     # -- Backend service image tag
     tag: "latest"
   frontend:
     # -- Frontend service image repository
-    repository: "ghcr.io/raids-lab/zhejianglab-crater-frontend"
+    repository: "ghcr.io/AkashiSensei/zhejianglab-crater-frontend"
     # -- Frontend service image tag
     tag: "latest"
   storage:

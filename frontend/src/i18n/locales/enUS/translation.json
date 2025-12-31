@@ -567,6 +567,7 @@
   "nodeDetail.info.containerRuntime": "Container runtime",
   "nodeDetail.info.cpuCount": "CPU Cores",
   "nodeDetail.info.cpuInfo": "CPU Information",
+  "nodeDetail.info.cpuBrand": "CPU Brand",
   "nodeDetail.info.diskInfo": "Disk Information",
   "nodeDetail.info.ipAddress": "IP Address",
   "nodeDetail.info.kernelVersion": "Kernel Version",
