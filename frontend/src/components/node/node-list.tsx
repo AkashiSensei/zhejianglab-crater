@@ -41,6 +41,44 @@ import { cn } from '@/lib/utils'
 
 import AcceleratorBadge from '../badge/accelerator-badge'
 
+// 架构类型枚举
+enum ArchitectureType {
+  ARM = 'arm',
+  SW64 = 'sw64',
+  AMD64 = 'amd64',
+  UNKNOWN = 'unknown',
+}
+
+// 根据架构字符串识别架构类型
+const getArchitectureType = (arch: string | undefined | null): ArchitectureType => {
+  if (!arch) {
+    return ArchitectureType.UNKNOWN
+  }
+  const archLower = arch.toLowerCase()
+  if (archLower.includes('arm')) {
+    return ArchitectureType.ARM
+  }
+  if (archLower.includes('sw64') || archLower === 'sw64') {
+    return ArchitectureType.SW64
+  }
+  return ArchitectureType.AMD64
+}
+
+// 根据架构类型获取对应的 Badge 样式类名
+const getArchitectureBadgeClassName = (archType: ArchitectureType): string => {
+  const baseClasses = 'font-mono font-normal'
+  switch (archType) {
+    case ArchitectureType.ARM:
+      return `${baseClasses} border-orange-600 bg-orange-50 text-orange-600 dark:border-orange-500 dark:bg-orange-950 dark:text-orange-400`
+    case ArchitectureType.SW64:
+      return `${baseClasses} border-green-600 bg-green-50 text-green-600 dark:border-green-500 dark:bg-green-950 dark:text-green-400`
+    case ArchitectureType.AMD64:
+      return `${baseClasses} border-sky-600 bg-blue-50 text-sky-600 dark:border-sky-500 dark:bg-blue-950 dark:text-sky-400`
+    default:
+      return `${baseClasses} border-sky-600 bg-blue-50 text-sky-600 dark:border-sky-500 dark:bg-blue-950 dark:text-sky-400`
+  }
+}
+
 // 资源使用情况计算结果接口
 export interface ResourceUsageInfo {
   usagePercent: number | null
@@ -311,17 +349,9 @@ export const getNodeColumns = (
       header: ({ column }) => <DataTableColumnHeader column={column} title={'架构'} />,
       cell: ({ row }) => {
         const arch = row.getValue<string>('arch')
-        const isArm = arch?.toLowerCase()?.includes('arm') ?? false
+        const archType = getArchitectureType(arch)
         return (
-          <Badge
-            variant="outline"
-            className={cn('font-mono font-normal', {
-              'border-orange-600 bg-orange-50 text-orange-600 dark:border-orange-500 dark:bg-orange-950 dark:text-orange-400':
-                isArm,
-              'border-sky-600 bg-blue-50 text-sky-600 dark:border-sky-500 dark:bg-blue-950 dark:text-sky-400':
-                !isArm,
-            })}
-          >
+          <Badge variant="outline" className={getArchitectureBadgeClassName(archType)}>
             {arch}
           </Badge>
         )
