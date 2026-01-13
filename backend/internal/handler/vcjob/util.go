@@ -308,6 +308,7 @@ type ArchitectureType int
 const (
 	ArchTypeAMD ArchitectureType = iota
 	ArchTypeARM
+	ArchTypeSW64
 	ArchTypeMulti
 )
 
@@ -315,50 +316,117 @@ const (
 func DetermineArchitectureType(archs []string) ArchitectureType {
 	hasARM := false
 	hasAMD := false
+	hasSW64 := false
 	for _, arch := range archs {
 		arch = strings.ToLower(arch)
 		if strings.Contains(arch, "arm") {
 			hasARM = true
 		} else if strings.Contains(arch, "amd") || strings.Contains(arch, "x86") {
 			hasAMD = true
+		} else if strings.Contains(arch, "sw64") {
+			hasSW64 = true
 		}
 	}
 
-	if hasARM && hasAMD {
+	// Count distinct architecture types
+	archCount := 0
+	if hasARM {
+		archCount++
+	}
+	if hasAMD {
+		archCount++
+	}
+	if hasSW64 {
+		archCount++
+	}
+
+	// Multi-arch: support multiple distinct architectures
+	if archCount > 1 {
 		return ArchTypeMulti
-	} else if hasARM {
+	}
+
+	// Single architecture
+	if hasARM {
 		return ArchTypeARM
+	} else if hasSW64 {
+		return ArchTypeSW64
 	} else {
 		return ArchTypeAMD
 	}
+}
+
+// mapImageArchToK8sArch maps image architecture strings to Kubernetes node architecture labels
+// Check order: sw64 (most specific) -> arm -> amd/x86
+func mapImageArchToK8sArch(arch string) string {
+	archLower := strings.ToLower(arch)
+	// Check sw64 first as it's the most specific architecture name
+	if strings.Contains(archLower, "sw64") {
+		return "sw64"
+	} else if strings.Contains(archLower, "arm") {
+		return "arm64"
+	} else if strings.Contains(archLower, "amd") || strings.Contains(archLower, "x86") {
+		return "amd64"
+	}
+	// Return empty string for unknown architectures
+	return ""
 }
 
 // GenerateArchitectureNodeAffinity generates node affinity based on image architecture
 // Rules:
 // - AMD64-only images: schedule only to amd64 nodes
 // - ARM64-only images: schedule only to arm64 nodes
-// - Multi-arch images (both AMD64 and ARM64): no architecture-specific affinity
+// - SW64-only images: schedule only to sw64 nodes
+// - Multi-arch images: schedule only to nodes with architectures supported by the image
 func GenerateArchitectureNodeAffinity(imageInfo ImageBaseInfo, baseAffinity *v1.Affinity) *v1.Affinity {
 	archType := DetermineArchitectureType(imageInfo.Archs)
 
-	// For multi-arch images, don't add architecture-specific affinity
-	if archType == ArchTypeMulti {
-		return baseAffinity
-	}
-
-	// Determine the architecture selector based on image type
+	// For multi-arch images, collect all supported architectures
 	var archSelector v1.NodeSelectorRequirement
-	if archType == ArchTypeARM {
-		archSelector = v1.NodeSelectorRequirement{
-			Key:      "kubernetes.io/arch",
-			Operator: v1.NodeSelectorOpIn,
-			Values:   []string{"arm64"},
+	if archType == ArchTypeMulti {
+		// Map image architecture strings to Kubernetes node architecture labels
+		supportedArchs := make([]string, 0)
+		archMap := make(map[string]bool) // Track unique architectures
+
+		for _, arch := range imageInfo.Archs {
+			k8sArch := mapImageArchToK8sArch(arch)
+			if k8sArch != "" && !archMap[k8sArch] {
+				supportedArchs = append(supportedArchs, k8sArch)
+				archMap[k8sArch] = true
+			}
 		}
-	} else { // ArchTypeAMD
-		archSelector = v1.NodeSelectorRequirement{
-			Key:      "kubernetes.io/arch",
-			Operator: v1.NodeSelectorOpIn,
-			Values:   []string{"amd64"},
+
+		// If we have supported architectures, create selector with all of them
+		if len(supportedArchs) > 0 {
+			archSelector = v1.NodeSelectorRequirement{
+				Key:      "kubernetes.io/arch",
+				Operator: v1.NodeSelectorOpIn,
+				Values:   supportedArchs,
+			}
+		} else {
+			// If no supported architectures found, return base affinity
+			return baseAffinity
+		}
+	} else {
+		// Determine the architecture selector based on image type for single-arch images
+		switch archType {
+		case ArchTypeARM:
+			archSelector = v1.NodeSelectorRequirement{
+				Key:      "kubernetes.io/arch",
+				Operator: v1.NodeSelectorOpIn,
+				Values:   []string{"arm64"},
+			}
+		case ArchTypeSW64:
+			archSelector = v1.NodeSelectorRequirement{
+				Key:      "kubernetes.io/arch",
+				Operator: v1.NodeSelectorOpIn,
+				Values:   []string{"sw64"},
+			}
+		default: // ArchTypeAMD
+			archSelector = v1.NodeSelectorRequirement{
+				Key:      "kubernetes.io/arch",
+				Operator: v1.NodeSelectorOpIn,
+				Values:   []string{"amd64"},
+			}
 		}
 	}
 

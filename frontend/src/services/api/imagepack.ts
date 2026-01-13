@@ -322,6 +322,7 @@ export const ImageDefaultArchs = [
   { value: 'linux/arm64' },
   { value: 'linux/arm/v7' },
   { value: 'linux/arm/v6' },
+  { value: 'linux/sw64' },
 ]
 
 export async function FetchAllUniqueImageTagObjects(): Promise<{ value: string }[]> {
