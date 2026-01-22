@@ -138,13 +138,14 @@ function LoginPage() {
           {/* 中间文字内容 */}
           <div className="relative flex h-full items-center justify-center">
             <div className="z-10 px-6 py-8 text-left text-white lg:px-16 lg:py-12">
-              <h1 className="mb-4 text-5xl leading-tight font-semibold">
+              <h1 className="mb-2 text-5xl leading-tight font-semibold">
                 <span className="dark:text-primary">欢迎体验</span>
                 <br />
-                异构云资源混合调度
+                适配国产异构软硬件平台的
                 <br />
-                与智能运维平台
+                云原生系统
               </h1>
+              <div className="mb-4 text-2xl text-white dark:text-slate-300">V1.1</div>
               <DocsButton
                 variant="ghost"
                 className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/85 dark:hover:text-primary-foreground bg-white text-black hover:bg-slate-200 hover:text-black"
