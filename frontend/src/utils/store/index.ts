@@ -62,10 +62,35 @@ export const globalLastView = atomWithStorage(LAST_VIEW_KEY, '', undefined, {
   getOnInit: true,
 })
 
+/** 与 Volcano（BASE）共用 vcjobs / context quota 的调度选项；jiagu / moarks / drift 暂与 BASE 等价 */
+export const SCHEDULER_ALGORITHMS = [
+  'volcano',
+  'colocate',
+  'sparse',
+  'jiagu',
+  'moarks',
+  'drift',
+] as const
+
+export type SchedulerAlgorithm = (typeof SCHEDULER_ALGORITHMS)[number]
+
+export function normalizeScheduler(s: string): SchedulerAlgorithm {
+  if ((SCHEDULER_ALGORITHMS as readonly string[]).includes(s)) {
+    return s as SchedulerAlgorithm
+  }
+  return 'volcano'
+}
+
+/** 是否与 Volcano（BASE）共用 vcjobs / context quota（含暂映射到 BASE 的 jiagu / moarks / drift） */
+export function schedulerUsesVolcanoBackend(s: string): boolean {
+  const n = normalizeScheduler(s)
+  return n === 'volcano' || n === 'jiagu' || n === 'moarks' || n === 'drift'
+}
+
 export const globalSettings = atomWithStorage(
   SETTINGS_KEY,
   {
-    scheduler: 'volcano' as 'volcano' | 'colocate' | 'sparse',
+    scheduler: 'volcano' as SchedulerAlgorithm,
     hideUsername: false,
   },
   undefined,
@@ -88,9 +113,12 @@ export const atomPrivacyAccepted = atomWithStorage<boolean>(
 )
 
 export const globalJobUrl = atom((get) => {
-  const scheduler = get(globalSettings).scheduler
+  const scheduler = normalizeScheduler(String(get(globalSettings).scheduler))
   switch (scheduler) {
     case 'volcano':
+    case 'jiagu':
+    case 'moarks':
+    case 'drift':
       return 'vcjobs'
     case 'colocate':
       return 'aijobs'

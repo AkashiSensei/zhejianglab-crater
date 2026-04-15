@@ -17,7 +17,7 @@ import { getDefaultStore } from 'jotai'
 
 import { apiV1Get, apiV1Post, apiV1Put } from '@/services/client'
 
-import { globalSettings } from '@/utils/store'
+import { globalSettings, schedulerUsesVolcanoBackend } from '@/utils/store'
 
 import { IResponse } from '../types'
 import { IUserAttributes } from './admin/user'
@@ -42,10 +42,10 @@ export interface QuotaResp {
 }
 
 const store = getDefaultStore()
-const { scheduler } = store.get(globalSettings)
 
 export const apiContextQuota = () => {
-  const url = scheduler === 'volcano' ? 'context/quota' : 'aijobs/quota'
+  const scheduler = store.get(globalSettings).scheduler
+  const url = schedulerUsesVolcanoBackend(scheduler) ? 'context/quota' : 'aijobs/quota'
   return apiV1Get<IResponse<QuotaResp>>(url)
 }
 

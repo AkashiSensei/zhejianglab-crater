@@ -42,13 +42,33 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import WarningAlert from '@/components/custom/warning-alert'
+import {
+  SCHEDULER_ALGORITHMS,
+  type SchedulerAlgorithm,
+  globalSettings,
+  normalizeScheduler,
+} from '@/utils/store'
 
-import { globalSettings } from '@/utils/store'
+function schedulerOptionLabel(value: SchedulerAlgorithm, t: (key: string) => string): string {
+  switch (value) {
+    case 'volcano':
+      return t('systemSetting.scheduler.volcano')
+    case 'colocate':
+      return 'DEEPSHARE'
+    case 'sparse':
+      return 'SPARSE'
+    case 'jiagu':
+      return 'JIAGU'
+    case 'moarks':
+      return 'MOARKS'
+    case 'drift':
+      return 'DRIFT'
+  }
+}
 
 export const Route = createFileRoute('/admin/more/')({
   component: RouteComponent,
-  loader: () => ({ crumb: t('navigation.platformSettings') }),
+  loader: () => ({ crumb: t('systemSetting.scheduler.title') }),
 })
 
 function RouteComponent() {
@@ -56,11 +76,10 @@ function RouteComponent() {
 
   // Moved Zod schema to component
   const formSchema = z.object({
-    scheduler: z.enum(['volcano', 'colocate', 'sparse'], {
+    scheduler: z.enum(SCHEDULER_ALGORITHMS, {
       invalid_type_error: t('systemSetting.scheduler.invalidType'),
       required_error: t('systemSetting.scheduler.required'),
     }),
-    hideUsername: z.boolean().default(false),
   })
 
   type FormSchema = z.infer<typeof formSchema>
@@ -69,108 +88,56 @@ function RouteComponent() {
 
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
-    defaultValues: settings,
+    defaultValues: { scheduler: normalizeScheduler(String(settings.scheduler)) },
   })
 
-  const handleSubmit = () => {
+  const handleSubmit = (values: FormSchema) => {
     toast.success(t('systemSetting.toast.success'))
-    setSettings(form.getValues())
-    // refresh page
+    setSettings((prev) => ({ ...prev, ...values }))
     window.location.reload()
   }
 
   return (
-    <>
-      <WarningAlert
-        title={t('systemSetting.warning.title')}
-        description={t('systemSetting.warning.description')}
-      />
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('systemSetting.scheduler.title')}</CardTitle>
-          <CardDescription>{t('systemSetting.scheduler.description')}</CardDescription>
-        </CardHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name="scheduler"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger className="">
-                          <SelectValue placeholder={t('systemSetting.scheduler.placeholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="volcano">
-                            {t('systemSetting.scheduler.volcano')}
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('systemSetting.scheduler.title')}</CardTitle>
+        <CardDescription>{t('systemSetting.scheduler.description')}</CardDescription>
+      </CardHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
+          <CardContent>
+            <FormField
+              control={form.control}
+              name="scheduler"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className="">
+                        <SelectValue placeholder={t('systemSetting.scheduler.placeholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SCHEDULER_ALGORITHMS.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {schedulerOptionLabel(value, t)}
                           </SelectItem>
-                          <SelectItem value="colocate">
-                            {t('systemSetting.scheduler.colocate')}
-                          </SelectItem>
-                          <SelectItem value="sparse">
-                            {t('systemSetting.scheduler.sparse')}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="px-6 py-4">
-              <Button type="submit">
-                <FileCogIcon />
-                {t('systemSetting.scheduler.submit')}
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-        <CardHeader>
-          <CardTitle>{t('systemSetting.username.title')}</CardTitle>
-          <CardDescription>{t('systemSetting.username.description')}</CardDescription>
-        </CardHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name="hideUsername"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        onValueChange={(value) => {
-                          field.onChange(value === 'true')
-                        }}
-                        defaultValue={field.value ? 'true' : 'false'}
-                      >
-                        <SelectTrigger className="">
-                          <SelectValue placeholder={t('systemSetting.username.placeholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">{t('systemSetting.username.yes')}</SelectItem>
-                          <SelectItem value="false">{t('systemSetting.username.no')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="px-6 py-4">
-              <Button type="submit">
-                <FileCogIcon />
-                {t('systemSetting.username.submit')}
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
-    </>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+          <CardFooter className="px-6 py-4">
+            <Button type="submit">
+              <FileCogIcon />
+              {t('systemSetting.scheduler.submit')}
+            </Button>
+          </CardFooter>
+        </form>
+      </Form>
+    </Card>
   )
 }

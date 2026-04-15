@@ -139,7 +139,7 @@ const useAdminSidebarGroups = (): NavGroupProps[] => {
       title: t('navigation.more'),
       items: [
         {
-          title: t('navigation.platformSettings'),
+          title: t('systemSetting.scheduler.title'),
           icon: SettingsIcon,
           url: '/admin/more',
         },

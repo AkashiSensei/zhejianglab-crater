@@ -69,7 +69,7 @@ import {
 
 import useIsAdmin from '@/hooks/use-admin'
 
-import { globalSettings } from '@/utils/store'
+import { globalSettings, schedulerUsesVolcanoBackend } from '@/utils/store'
 import { configGrafanaJobAtom, configGrafanaNodeAtom } from '@/utils/store/config'
 
 import ResourceBadges from '../badge/resource-badges'
@@ -590,7 +590,7 @@ export const NodeDetail = ({ nodeName, ...props }: NodeDetailProps) => {
             },
           ],
           defaultValues: [
-            scheduler === 'volcano'
+            schedulerUsesVolcanoBackend(scheduler)
               ? 'batch.volcano.sh/v1alpha1/Job'
               : 'aisystem.github.com/v1alpha1/AIJob',
           ],

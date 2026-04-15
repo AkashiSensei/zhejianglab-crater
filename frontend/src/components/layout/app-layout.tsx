@@ -70,7 +70,7 @@ const AppLayout = ({ groups, rawPath, children }: AppLayoutProps) => {
           {scheduler !== 'volcano' && (
             <Badge variant="secondary" className="uppercase">
               <CogIcon />
-              {scheduler}
+              {String(scheduler).toUpperCase()}
             </Badge>
           )}
         </header>

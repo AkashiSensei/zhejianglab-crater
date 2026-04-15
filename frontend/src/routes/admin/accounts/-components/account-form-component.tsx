@@ -52,7 +52,7 @@ import { apiAdminUserList } from '@/services/api/admin/user'
 import { apiResourceList } from '@/services/api/resource'
 
 import { convertFormToQuota } from '@/utils/quota'
-import { globalSettings } from '@/utils/store'
+import { globalSettings, schedulerUsesVolcanoBackend } from '@/utils/store'
 
 import { cn } from '@/lib/utils'
 
@@ -147,7 +147,7 @@ export const AccountForm = ({ onOpenChange, account }: AccountFormProps) => {
         quota: convertFormToQuota(values.resources),
         expiredAt: values.expiredAt,
         admins: values.admins?.map((id) => parseInt(id)),
-        withoutVolcano: scheduler !== 'volcano',
+        withoutVolcano: !schedulerUsesVolcanoBackend(scheduler),
       }),
     onSuccess: async (_, { name }) => {
       await queryClient.invalidateQueries({
@@ -165,7 +165,7 @@ export const AccountForm = ({ onOpenChange, account }: AccountFormProps) => {
         quota: convertFormToQuota(values.resources),
         expiredAt: values.expiredAt,
         admins: values.admins?.map((id) => parseInt(id)),
-        withoutVolcano: scheduler !== 'volcano',
+        withoutVolcano: !schedulerUsesVolcanoBackend(scheduler),
       }),
     onSuccess: async (_, { name }) => {
       await queryClient.invalidateQueries({
