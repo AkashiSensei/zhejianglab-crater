@@ -29,7 +29,6 @@ import { atomFixedLayout, globalSettings } from '@/utils/store'
 import { cn } from '@/lib/utils'
 
 import { NavGroupProps } from '../sidebar/types'
-import { WhatsNewDialog } from './what-is-new'
 
 interface AppLayoutProps {
   groups: NavGroupProps[]
@@ -88,7 +87,6 @@ const AppLayout = ({ groups, rawPath, children }: AppLayoutProps) => {
         >
           {children}
         </motion.div>
-        <WhatsNewDialog />
       </SidebarInset>
     </SidebarProvider>
   )

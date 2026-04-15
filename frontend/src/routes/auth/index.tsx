@@ -14,36 +14,12 @@
  * limitations under the License.
  */
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { useAtomValue } from 'jotai'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-
-import DocsButton from '@/components/button/docs-button'
-// import CraterIcon from '@/components/icon/crater-icon'
-// import CraterText from '@/components/icon/crater-text'
 import NotFound from '@/components/placeholder/not-found'
 
 import { AuthMode } from '@/services/api/auth'
-import { queryAuthMode } from '@/services/query/auth'
 
-import { configUrlWebsiteBaseAtom } from '@/utils/store/config'
-
-// import { useTheme } from '@/utils/theme'
-
-import { ForgotPasswordForm } from './-components/forgot-password-form'
 import { LoginForm } from './-components/login-form'
-import { SignupForm } from './-components/signup-form'
 
 export const Route = createFileRoute('/auth/')({
   validateSearch: (search) => ({
@@ -56,20 +32,8 @@ export const Route = createFileRoute('/auth/')({
       throw redirect({ to: search.redirect })
     }
   },
-  loader: async ({ context: { queryClient } }) => {
-    return queryClient
-      .ensureQueryData(queryAuthMode)
-      .then((data) => {
-        return {
-          authMode: data.data,
-        }
-      })
-      .catch(() => {
-        return {
-          authMode: AuthMode.NORMAL,
-        }
-      })
-  },
+  // 验收定制版：仅启用普通登录，不再请求认证模式接口
+  loader: async () => ({ authMode: AuthMode.NORMAL }),
   component: LoginPage,
   notFoundComponent: () => <NotFound />,
 })
@@ -77,162 +41,25 @@ export const Route = createFileRoute('/auth/')({
 function LoginPage() {
   const searchParams = Route.useSearch()
   const auth = Route.useRouteContext().auth
-  const [showSignup, setShowSignup] = useState(false)
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [showRegisterDialog, setShowRegisterDialog] = useState(false)
-  //   const theme = useTheme().theme
-  //   const setTheme = useTheme().setTheme
-  const currentMode = Route.useLoaderData().authMode
-  const website = useAtomValue(configUrlWebsiteBaseAtom)
-
-  // 处理注册按钮点击
-  const handleRegisterClick = () => {
-    if (currentMode === AuthMode.ACT) {
-      setShowRegisterDialog(true)
-    } else {
-      setShowSignup(true)
-      setShowForgotPassword(false)
-    }
-  }
-
-  // 处理忘记密码按钮点击
-  const handleForgotPasswordClick = () => {
-    if (currentMode === AuthMode.ACT) {
-      toast.info('请联系 G512 杜英杰老师')
-    } else {
-      setShowForgotPassword(true)
-      setShowSignup(false)
-    }
-  }
-
-  // 返回登录表单
-  const handleBackToLogin = () => {
-    setShowSignup(false)
-    setShowForgotPassword(false)
-  }
+  const { authMode } = Route.useLoaderData()
 
   return (
-    <div className="h-screen w-full lg:grid lg:grid-cols-2">
-      {/* 左侧部分 */}
-      <div className="bg-primary hidden lg:block dark:bg-slate-800/70">
-        <div className="relative h-full w-full">
-          {/* 顶部Logo - 已隐藏 */}
-          {/* <div
-            className="absolute top-10 left-10 z-20 flex items-center text-lg font-medium"
-            title="Switch signup and login"
-          >
-            <button
-              className="flex h-14 w-full flex-row items-center justify-center text-white"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            >
-              <CraterIcon className="mr-1.5 h-8 w-8" />
-              <CraterText className="h-4" />
-            </button>
-          </div> */}
-          {/* 底部版权信息 - 已隐藏 */}
-          {/* <div className="absolute bottom-10 left-10 z-20">
-            <blockquote className="space-y-2">
-              <footer className="text-sm text-white/80">Copyright @ ACT RAIDS Lab</footer>
-            </blockquote>
-          </div> */}
-          {/* 中间文字内容 */}
-          <div className="relative flex h-full items-center justify-center">
-            <div className="z-10 px-6 py-8 text-left text-white lg:px-16 lg:py-12">
-              <h1 className="mb-2 text-5xl leading-tight font-semibold">
-                <span className="dark:text-primary">欢迎体验</span>
-                <br />
-                适配国产异构软硬件平台的
-                <br />
-                云原生系统
+    <div className="bg-background flex min-h-screen w-full items-center justify-center px-4 py-12">
+      <div className="flex w-full max-w-6xl flex-col items-center justify-center">
+        <div className="mx-auto flex w-full flex-col items-center space-y-8">
+          <div className="w-full max-w-[min(100%,90rem)] text-center">
+            <div className="overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+              <h1 className="text-foreground inline-block px-2 text-2xl font-semibold tracking-tight whitespace-nowrap sm:text-3xl md:text-4xl">
+                异构云资源的混合调度与智能运维技术课题
               </h1>
-              <div className="mb-4 text-2xl text-white dark:text-slate-300">V1.1</div>
-              <DocsButton
-                variant="ghost"
-                className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/85 dark:hover:text-primary-foreground bg-white text-black hover:bg-slate-200 hover:text-black"
-                title="平台文档"
-                url=""
-              />
             </div>
+          </div>
+          <div className="mx-auto w-full max-w-[350px] space-y-6">
+            <p className="text-muted-foreground text-center text-sm">请输入您的账号和密码</p>
+            <LoginForm searchParams={searchParams} login={auth.login} authMode={authMode} />
           </div>
         </div>
       </div>
-      {/* 右侧表单部分 */}
-      <div className="flex items-center justify-center py-12">
-        {showSignup && currentMode === AuthMode.NORMAL ? (
-          <div className="mx-auto w-[350px] space-y-6">
-            <div className="space-y-2 text-center">
-              <h1 className="text-3xl font-bold">用户注册</h1>
-              <p className="text-muted-foreground text-sm">仅面向特定用户提供此功能</p>
-            </div>
-            <SignupForm />
-            <div className="text-muted-foreground text-center text-sm">
-              已有账号？
-              <button onClick={handleBackToLogin} className="underline">
-                立即登录
-              </button>
-            </div>
-          </div>
-        ) : showForgotPassword && currentMode === AuthMode.NORMAL ? (
-          <div className="mx-auto w-[350px] space-y-6">
-            <div className="space-y-2 text-center">
-              <h1 className="text-3xl font-bold">重置密码</h1>
-              <p className="text-muted-foreground text-sm">我们将向您的邮箱发送密码重置链接</p>
-            </div>
-            <ForgotPasswordForm />
-            <div className="text-muted-foreground text-center text-sm">
-              想起密码了？
-              <button onClick={handleBackToLogin} className="underline">
-                返回登录
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="mx-auto w-[350px] space-y-6">
-            <div className="space-y-2 text-center">
-              <h1 className="text-3xl font-bold">用户登录</h1>
-              <p className="text-muted-foreground text-sm">
-                {currentMode === AuthMode.ACT
-                  ? '已接入 ACT 实验室统一身份认证'
-                  : '请输入您的账号和密码'}
-              </p>
-            </div>
-            <LoginForm
-              searchParams={searchParams}
-              login={auth.login}
-              authMode={currentMode}
-              onForgotPasswordClick={handleForgotPasswordClick}
-            />
-            <div className="text-muted-foreground text-center text-sm">
-              还没有账号？
-              <button onClick={handleRegisterClick} className="underline">
-                立即注册
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ACT模式下的注册引导对话框 */}
-      <AlertDialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>账号激活指南</AlertDialogTitle>
-            <AlertDialogDescription>
-              第一次登录平台时，需要从 ACT 门户同步用户信息，请参考「
-              <a href={`${website}/docs/user/quick-start/login`} className="text-primary underline">
-                平台访问指南
-              </a>
-              」激活您的账号。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <DocsButton title={'立即阅读'} url={`quick-start/login`} />
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
