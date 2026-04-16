@@ -53,6 +53,9 @@ function LoginPage() {
                 异构云资源的混合调度与智能运维技术课题
               </h1>
             </div>
+            <p className="text-muted-foreground mt-3 text-center text-xl font-medium tracking-tight sm:text-2xl md:text-3xl">
+              课题编号： 2022YFB4502003
+            </p>
           </div>
           <div className="mx-auto w-full max-w-[350px] space-y-6">
             <p className="text-muted-foreground text-center text-sm">请输入您的账号和密码</p>

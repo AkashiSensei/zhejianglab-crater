@@ -34,13 +34,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 import {
   SCHEDULER_ALGORITHMS,
@@ -49,21 +43,50 @@ import {
   normalizeScheduler,
 } from '@/utils/store'
 
-function schedulerOptionLabel(value: SchedulerAlgorithm, t: (key: string) => string): string {
-  switch (value) {
-    case 'volcano':
-      return t('systemSetting.scheduler.volcano')
-    case 'colocate':
-      return 'DEEPSHARE'
-    case 'sparse':
-      return 'SPARSE'
-    case 'jiagu':
-      return 'JIAGU'
-    case 'moarks':
-      return 'MOARKS'
-    case 'drift':
-      return 'DRIFT'
-  }
+type SchedulerOption = {
+  value: SchedulerAlgorithm
+  title: string
+  scene?: string
+  problem?: string
+}
+
+function schedulerOptions(t: (key: string) => string): SchedulerOption[] {
+  return [
+    {
+      value: 'volcano',
+      title: t('systemSetting.scheduler.volcano'),
+    },
+    {
+      value: 'colocate',
+      title: 'DeepShare',
+      scene: 'GPU 训练任务公平共享场景',
+      problem: '解决多租户 GPU 集群中训练任务的配额僵化与资源浪费问题',
+    },
+    {
+      value: 'sparse',
+      title: 'Sparse',
+      scene: '深度推荐任务混部调度场景',
+      problem: '解决推荐模型混部时稀疏 / 稠密算子间的资源争用与性能干扰',
+    },
+    {
+      value: 'jiagu',
+      title: 'JIAGU',
+      scene: 'Serverless 任务弹性伸缩场景',
+      problem: '解决 Serverless 函数实例频繁冷启动带来的高延迟与资源开销',
+    },
+    {
+      value: 'drift',
+      title: 'DRIFT',
+      scene: 'GPU 共享任务碎片治理场景',
+      problem: '解决异构集群中 GPU 共享导致的资源碎片化与利用率低下',
+    },
+    {
+      value: 'moarks',
+      title: 'Moarks',
+      scene: '多智能体推理任务跨集群编排场景',
+      problem: '解决多 Agent 推理应用在异构跨集群环境下的端到端调度',
+    },
+  ]
 }
 
 export const Route = createFileRoute('/admin/more/')({
@@ -112,18 +135,39 @@ function RouteComponent() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="">
-                        <SelectValue placeholder={t('systemSetting.scheduler.placeholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SCHEDULER_ALGORITHMS.map((value) => (
-                          <SelectItem key={value} value={value}>
-                            {schedulerOptionLabel(value, t)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={(v) =>
+                        field.onChange(v as (typeof SCHEDULER_ALGORITHMS)[number])
+                      }
+                      className="grid gap-3"
+                    >
+                      {schedulerOptions(t).map((opt) => {
+                        const id = `scheduler-${opt.value}`
+                        return (
+                          <label
+                            key={opt.value}
+                            htmlFor={id}
+                            className="hover:bg-muted/40 flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors"
+                          >
+                            <RadioGroupItem id={id} value={opt.value} className="mt-1" />
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold tracking-tight sm:text-base">
+                                {opt.title}
+                              </div>
+                              {opt.scene && opt.problem && (
+                                <div className="mt-1 space-y-1">
+                                  <div className="text-foreground text-sm font-medium">
+                                    {opt.scene}
+                                  </div>
+                                  <div className="text-muted-foreground text-sm">{opt.problem}</div>
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        )
+                      })}
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
