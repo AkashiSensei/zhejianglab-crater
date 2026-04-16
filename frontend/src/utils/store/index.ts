@@ -112,22 +112,7 @@ export const atomPrivacyAccepted = atomWithStorage<boolean>(
   }
 )
 
-export const globalJobUrl = atom((get) => {
-  const scheduler = normalizeScheduler(String(get(globalSettings).scheduler))
-  switch (scheduler) {
-    case 'volcano':
-    case 'jiagu':
-    case 'moarks':
-    case 'drift':
-      return 'vcjobs'
-    case 'colocate':
-      return 'aijobs'
-    case 'sparse':
-      return 'spjobs'
-    default:
-      return 'vcjobs'
-  }
-})
+export const globalJobUrl = atom(() => 'vcjobs')
 
 export const globalHideUsername = atom((get) => {
   const hideUsername = get(globalSettings).hideUsername

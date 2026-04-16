@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { getDefaultStore } from 'jotai'
-
 import { apiV1Get, apiV1Post, apiV1Put } from '@/services/client'
-
-import { globalSettings, schedulerUsesVolcanoBackend } from '@/utils/store'
 
 import { IResponse } from '../types'
 import { IUserAttributes } from './admin/user'
@@ -41,12 +37,10 @@ export interface QuotaResp {
   gpus: ResourceResp[]
 }
 
-const store = getDefaultStore()
-
 export const apiContextQuota = () => {
-  const scheduler = store.get(globalSettings).scheduler
-  const url = schedulerUsesVolcanoBackend(scheduler) ? 'context/quota' : 'aijobs/quota'
-  return apiV1Get<IResponse<QuotaResp>>(url)
+  // 临时策略：无论调度算法如何，都走 Volcano/BASE 侧 quota，
+  // 避免 aijobs 路由缺失导致前端报错
+  return apiV1Get<IResponse<QuotaResp>>('context/quota')
 }
 
 export const apiContextUpdateUserAttributes = (data: IUserAttributes) =>
